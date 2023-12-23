@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Weather App</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 25%;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            color: #555;
+        }
+
+        .forecast {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .forecast-item {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Your Weather App</h1>
+    </header>
+
+    <div class="container">
+        <form>
+            <input type="text" placeholder="Enter city name" id="cityInput">
+            <button type="button" onclick="getWeather()">Get Weather</button>
+        </form>
+
+        <div id="weatherInfo">
+            <h2 id="city">Search any City by Name</h2>
+            <p id="temperature"></p>
+            <p id="description"></p>
+            <p id="humidity"></p>
+            <p id="wind"></p>
+        </div>
+
+        <div class="forecast" id="forecastInfo">
+            <div class="forecast-item">
+                <h3></h3>
+                <p></p>
+                <p></p>
+            </div>
+            <div class="forecast-item">
+                <h3></h3>
+                <p></p>
+                <p></p>
+            </div>
+            <div class="forecast-item">
+                <h3></h3>
+                <p></p>
+                <p></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get the user's current location and set it as the default city
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    // You can use a reverse geocoding service to get the city name from the coordinates
+                    // For simplicity, let's use a placeholder value
+                    const cityName = "Lahore";
+
+                    document.getElementById("cityInput").value = latitude+","+longitude;
+                });
+            }
+        });
+
+        function call_the_api(city) {
+            var myHeaders = new Headers();
+            myHeaders.append("X-Rapidapi-Key", "147324341bmsh581ce2d9208ea41p1f9f2bjsn08fe8ba9932b");
+            myHeaders.append("X-Rapidapi-Host", "weatherapi-com.p.rapidapi.com");
+            myHeaders.append("Host", "weatherapi-com.p.rapidapi.com");
+
+            var requestOptions = {
+                method: 'GET',
+                headers: myHeaders,
+                redirect: 'follow'
+            };
+
+            // Return the fetch promise
+            return fetch("https://weatherapi-com.p.rapidapi.com/forecast.json?q=" + city + "&days=3", requestOptions)
+                .then(response => response.json())
+                .catch(error => {
+                    console.log('error', error);
+                    throw error;
+                });
+        }
+
+        function getWeather() {
+            const cityName = document.getElementById("cityInput").value;
+            
+            // Use the returned promise
+            call_the_api(cityName)
+                .then(data => {
+                    // Update the current weather data (static data for demonstration purposes)
+                    document.getElementById("city").innerText = data.location.name+","+data.location.region+","+data.location.country;
+                    document.getElementById("temperature").innerText = data.current.temp_c+"°C";
+                    document.getElementById("description").innerText = data.current.condition.text;
+                    document.getElementById("humidity").innerText = "Humidity: 60%";
+                    document.getElementById("wind").innerText = data.current.wind_kph+" km/h";
+
+                    // Update the forecast data (static data for demonstration purposes)
+                    const forecastDays = document.querySelectorAll('.forecast-item');
+                    
+                    forecastDays[0].innerHTML = "<h3>"+data.forecast.forecastday[0].date+"</h3><p>"+data.forecast.forecastday[0].day.maxtemp_c+"°C</p><p>"+data.forecast.forecastday[0].day.condition.text+"</p>";
+                    forecastDays[1].innerHTML = "<h3>"+data.forecast.forecastday[1].date+"</h3><p>"+data.forecast.forecastday[1].day.maxtemp_c+"°C</p><p>"+data.forecast.forecastday[1].day.condition.text+"</p>";
+                    forecastDays[2].innerHTML = "<h3>"+data.forecast.forecastday[2].date+"</h3><p>"+data.forecast.forecastday[2].day.maxtemp_c+"°C</p><p>"+data.forecast.forecastday[2].day.condition.text+"</p>";
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+    </script>
+
+</body>
+</html>
